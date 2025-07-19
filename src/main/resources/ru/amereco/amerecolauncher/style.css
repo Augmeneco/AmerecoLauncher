@@ -1,0 +1,36 @@
+@font-face {
+    font-family: 'Public Pixel';
+    src: url('fonts/PublicPixel.ttf');
+}
+
+
+.root {
+  -fx-background-image: url("images/bg2.png");
+  -fx-background-size: cover;
+  -fx-font-family: 'Public Pixel';
+}
+
+.ninetile-button {
+    -fx-border-image-source: url("images/button_def.png");
+    -fx-border-image-slice: 3px fill;
+    -fx-border-image-width: 5px;
+    -fx-border-image-insets: 0;
+    -fx-border-image-repeat: stretch;
+    -fx-background-color: transparent;
+}
+
+.ninetile-button:hover {
+    -fx-border-image-source: url("images/button_hover.png");
+}
+
+.ninetile-button:pressed {
+    -fx-border-image-source: url("images/button_pressed.png");
+}
+
+.ninetile-button .text {
+    -fx-effect: dropshadow(one-pass-box, black, 0, 0.0, 3, 3);
+}
+
+.ninetile-button:pressed .text {
+    -fx-effect: dropshadow(one-pass-box, black, 0, 0.0, 2, 2);
+}
