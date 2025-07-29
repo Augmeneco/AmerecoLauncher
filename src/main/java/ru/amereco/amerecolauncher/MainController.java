@@ -7,21 +7,36 @@ import javafx.application.Platform;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.EnumSet;
 
 import ru.amereco.amerecolauncher.httpsync.HTTPSync;
-import ru.amereco.amerecolauncher.httpsync.HTTPSync.ProgressData;
 import ru.amereco.amerecolauncher.minecraft.MinecraftLauncher;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
-import ru.amereco.amerecolauncher.minecraft.mixins.Fabric;
+import javafx.scene.layout.StackPane;
+import javafx.stage.WindowEvent;
+import ru.amereco.amerecolauncher.minecraft.Loader;
+import ru.amereco.amerecolauncher.minecraft.MinecraftDownloader;
+import ru.amereco.amerecolauncher.minecraft.fabric.FabricDownloader;
+import ru.amereco.amerecolauncher.utils.ProgressData;
 
 public class MainController {
-    private final Config config = Config.load();
+    public enum UpdateNeeded {
+        MINECRAFT, FABRIC, HTTPSYNC;
+        public static final EnumSet<UpdateNeeded> ALL_OPTS = EnumSet.allOf(UpdateNeeded.class);
+    }
+    
+    private final Config config = Config.get();
     private HTTPSync httpSync;
+    private MinecraftDownloader minecraftDownloader;
+    private FabricDownloader fabricDownloader;
     private Thread minecraftThread;
     
+    private EnumSet<UpdateNeeded> updateNeeded = EnumSet.noneOf(UpdateNeeded.class);
+    
+    @FXML private StackPane root;
     @FXML private Button mainButton;
     @FXML private Button settingsBtn;
     @FXML private Button logoutBtn;
@@ -34,32 +49,57 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        // Initialize HTTPSync
-        String configUrl = "https://lanode.augmeneco.ru/rpcraft_dist/instances/rpcraft/rpcraft.json";
-        String baseUrl = "https://lanode.augmeneco.ru/rpcraft_dist/";
-        Path configPath = Paths.get(config.mainDir, "instances/rpcraft/rpcraft.json");
-        Path basePath = Paths.get(config.mainDir);
-
         try {
-            Files.createDirectories(basePath);
+            Files.createDirectories(Path.of(config.mainDir));
         } catch (IOException exception) {
-            System.out.println("Can't create path "+basePath);
+            System.out.println("Can't create path "+config.mainDir);
             exitProgram();
         }
 
+        minecraftDownloader = new MinecraftDownloader();
+        minecraftDownloader.setOnProgress(this::handleProgressUpdate);
+        fabricDownloader = new FabricDownloader();
+        fabricDownloader.setOnProgress(this::handleProgressUpdate);
+        
+        // Initialize HTTPSync
+        String baseUrl = "https://lanode.augmeneco.ru/rpcraft_dist/instances/rpcraft/";
+        String configUrl = "https://lanode.augmeneco.ru/rpcraft_dist/instances/rpcraft/rpcraft.json";
+        Path basePath = Path.of(config.mainDir, "instances/rpcraft/");
+        Path configPath = Path.of(config.mainDir, "instances/rpcraft/rpcraft.json");
         httpSync = new HTTPSync(configUrl, baseUrl, configPath, basePath, 5000, 3000);
         httpSync.setOnProgress(this::handleProgressUpdate);
-
-        // Start initial update check
+        
+        root.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((o2, oldWindow, newWindow) -> {
+                    if (newWindow != null) {
+                        newWindow.addEventHandler(WindowEvent.WINDOW_SHOWN, ev -> {
+                            // Runs once, immediately after window appears
+                            onOpen();
+                        });
+                    }
+                });
+            }
+        });
+        checkUpdates();
+    }
+    
+    public void onOpen() {
         checkUpdates();
     }
 
     private void checkUpdates() {
         new Thread(() -> {
             try {
-                boolean hasUpdates = httpSync.checkUpdates();
+                if (minecraftDownloader.checkUpdates("1.20.1"))
+                    updateNeeded.add(UpdateNeeded.MINECRAFT);
+                if (fabricDownloader.checkUpdates("1.20.1-fabric-0.16.10"))
+                    updateNeeded.add(UpdateNeeded.FABRIC);
+                if (httpSync.checkUpdates("")) 
+                    updateNeeded.add(UpdateNeeded.HTTPSYNC);
+                                     
                 javafx.application.Platform.runLater(() -> {
-                    if (hasUpdates) {
+                    if (!updateNeeded.isEmpty()) {
                         mainButton.setText("Обновить");
                         mainButton.setOnAction(e -> startUpdate());
                     } else {
@@ -68,6 +108,7 @@ public class MainController {
                     }
                 });
             } catch (Exception e) {
+                e.printStackTrace();
                 javafx.application.Platform.runLater(() -> {
                     stageLabel.setText("Ошибка проверки обновлений");
                     stepLabel.setText(e.getMessage());
@@ -77,17 +118,27 @@ public class MainController {
     }
 
     private void startUpdate() {
+        mainButton.setDisable(true);
         new Thread(() -> {
             try {
-                httpSync.synchronize();
+                if (updateNeeded.contains(UpdateNeeded.MINECRAFT))
+                    minecraftDownloader.download("1.20.1");
+                if (updateNeeded.contains(UpdateNeeded.FABRIC))
+                    fabricDownloader.download("1.20.1-fabric-0.16.10");
+                if (updateNeeded.contains(UpdateNeeded.HTTPSYNC))
+                    httpSync.download("");
+                
                 javafx.application.Platform.runLater(() -> {
                     mainButton.setText("Играть");
                     mainButton.setOnAction(e -> launchMinecraft());
+                    mainButton.setDisable(false);
                 });
             } catch (Exception e) {
+                e.printStackTrace();
                 javafx.application.Platform.runLater(() -> {
                     stageLabel.setText("Ошибка обновления");
                     stepLabel.setText(e.getMessage());
+                    mainButton.setDisable(false);
                 });
             }
         }).start();
@@ -95,12 +146,12 @@ public class MainController {
 
     private void handleProgressUpdate(ProgressData progress) {
         javafx.application.Platform.runLater(() -> {
-            stageLabel.setText(progress.stage);
-            stepLabel.setText(progress.step);
-            progressBar.setProgress(progress.maxProgress > 0 ?
-                (double)progress.progress / progress.maxProgress : 0);
+            stageLabel.setText(progress.stage());
+            stepLabel.setText(progress.step());
+            progressBar.setProgress(progress.maxProgress() > 0 ?
+                (double)progress.progress() / progress.maxProgress() : 0);
             progressLabel.setText(String.format("%d / %d",
-                progress.progress, progress.maxProgress));
+                progress.progress(), progress.maxProgress()));
         });
     }
 
@@ -113,11 +164,18 @@ public class MainController {
             mainButton.setOnAction(e -> stopMinecraft());
 
             minecraftThread = new Thread(() -> {
-                try {
-                    MinecraftLauncher minecraftLauncher = new MinecraftLauncher("1.20.1", mainDir, gameDir);
-                    Fabric.apply(minecraftLauncher, "fabric-1.20.1-0.16.10", mainDir);
+                try {              
+                    MinecraftLauncher minecraftLauncher = new MinecraftLauncher(
+                            Path.of(mainDir), 
+                            Path.of(gameDir)
+                    );
+                    minecraftLauncher.userName = config.username;
+                    Loader loader = new Loader(minecraftLauncher);
+                    loader.loadFull("1.20.1");
+                    loader.loadPatch("1.20.1-fabric-0.16.10");
                     minecraftLauncher.launch();
                 } catch (Exception exc) {
+                    exc.printStackTrace();
                     javafx.application.Platform.runLater(() -> {
                         mainButton.setText("Играть");
                         mainButton.setOnAction(e -> launchMinecraft());
@@ -137,6 +195,13 @@ public class MainController {
             stepLabel.setText(exc.getMessage());
         }
     }
+    
+    @FXML
+    private void onLogoutPressed() throws IOException{
+        config.username = "";
+        config.save();
+        switchToAuth();
+    }
 
     public void stopMinecraft() {
         minecraftThread.interrupt();
@@ -148,7 +213,7 @@ public class MainController {
     }
     
     @FXML
-    private void switchToLogin() throws IOException {
+    private void switchToAuth() throws IOException {
         App.setRoot("auth");
     }
 

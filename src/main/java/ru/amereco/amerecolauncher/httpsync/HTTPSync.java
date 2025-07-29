@@ -1,35 +1,27 @@
 package ru.amereco.amerecolauncher.httpsync;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import ru.amereco.amerecolauncher.utils.Downloader;
 
-public class HTTPSync {
+public class HTTPSync extends Downloader {
     private final String configURL;
     private final String baseURL;
     private final Path configPath;
     private final Path basePath;
     private final int timeout;
     private final int retryDelay;
-    
-    private int maxProgress;
-    private int progress;
-    private String stage;
-    private String step;
-    private Consumer<ProgressData> onProgress;
     
     private final HttpClient httpClient;
 
@@ -47,7 +39,8 @@ public class HTTPSync {
             .build();
     }
 
-    public boolean checkUpdates() throws Exception {
+    @Override
+    public boolean checkUpdates() throws IOException, InterruptedException {
         updateStage("Проверка обновлений...");
         
         JSONObject remoteConfig = getConfig(configURL);
@@ -62,7 +55,12 @@ public class HTTPSync {
         return hasUpdates;
     }
 
-    private JSONObject getLocalConfig(Path path) throws Exception {
+    @Override
+    public boolean checkUpdates(String versionId) throws IOException, InterruptedException {
+        return checkUpdates();
+    }
+
+    private JSONObject getLocalConfig(Path path) throws IOException, InterruptedException {
         if (Files.exists(path)) {
             String content = Files.readString(path);
             return new JSONObject(content);
@@ -74,10 +72,7 @@ public class HTTPSync {
         }
     }
 
-    public void setOnProgress(Consumer<ProgressData> callback) {
-        this.onProgress = callback;
-    }
-    private JSONObject getConfig(String url) throws Exception {
+    private JSONObject getConfig(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .GET()
@@ -89,14 +84,17 @@ public class HTTPSync {
         return new JSONObject(response.body());
     }
 
-    private void updateStage(String stage) {
-        this.stage = stage;
-        if (onProgress != null) {
-            onProgress.accept(new ProgressData(maxProgress, progress, stage, step));
-        }
+    @Override
+    public void download() throws IOException, InterruptedException {
+        synchronize();
     }
 
-    public void synchronize() throws Exception {
+    @Override
+    public void download(String versionId) throws IOException, InterruptedException {
+        download();
+    }
+    
+    public void synchronize() throws IOException, InterruptedException {
         updateStage("Загрузка обновлений...");
         Map<String, String> fileActions = getFileActions();
         try {
@@ -105,10 +103,11 @@ public class HTTPSync {
         } finally {
             fileActions.clear();
         }
-        updateStage("Обновления загружены...");
+        waitUntilDownload();
+        updateStage("Обновления загружены");
     }
 
-    private Map<String, String> getFileActions() throws Exception {
+    private Map<String, String> getFileActions() throws IOException, InterruptedException {
         updateStage("Загрузка конфигов в память");
         
         JSONObject remoteConfig = getConfig(configURL);
@@ -125,7 +124,7 @@ public class HTTPSync {
         for (int i = 0; i < localConfig.getJSONArray("files").length(); i++) {
             JSONObject file = localConfig.getJSONArray("files").getJSONObject(i);
             String path = file.getString("path");
-            updateStep(path);
+            updateStepAndIncProgress(path);
             actions.put(path, "D");
         }
         
@@ -133,7 +132,7 @@ public class HTTPSync {
         for (int i = 0; i < remoteConfig.getJSONArray("files").length(); i++) {
             JSONObject remoteFile = remoteConfig.getJSONArray("files").getJSONObject(i);
             String path = remoteFile.getString("path");
-            updateStep(path);
+            updateStepAndIncProgress(path);
             
             boolean found = false;
             for (int j = 0; j < localConfig.getJSONArray("files").length(); j++) {
@@ -158,15 +157,7 @@ public class HTTPSync {
         return actions;
     }
 
-    private void updateStep(String step) {
-        this.step = step;
-        progress++;
-        if (onProgress != null) {
-            onProgress.accept(new ProgressData(maxProgress, progress, stage, step));
-        }
-    }
-
-    private void performFileActions(Map<String, String> actions) throws Exception {
+    private void performFileActions(Map<String, String> actions) throws IOException, InterruptedException {
         updateStage("Синхронизация");
         maxProgress = actions.size();
         progress = 0;
@@ -185,24 +176,16 @@ public class HTTPSync {
                 downloadFile(remoteUrl, localPath);
             } else if (action.equals("D")) {
                 Files.deleteIfExists(Paths.get(localPath));
+                updateStepAndIncProgress(entry.getKey());
             }
         }
     }
 
-    private void downloadFile(String url, String outputPath) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .GET()
-            .build();
-            
-        HttpResponse<InputStream> response = httpClient.send(request, 
-            HttpResponse.BodyHandlers.ofInputStream());
-            
-        Files.copy(response.body(), Paths.get(outputPath), 
-            StandardCopyOption.REPLACE_EXISTING);
+    private void downloadFile(String url, String outputPath) {
+        downloadToPathInThread(URI.create(url), Path.of(outputPath));
     }
 
-    private void updateConfig() throws Exception {
+    private void updateConfig() throws IOException {
         Path configDir = configPath.getParent();
         if (!Files.exists(configDir)) {
             Files.createDirectories(configDir);
@@ -212,20 +195,6 @@ public class HTTPSync {
 
     public int getRetryDelay() {
         return retryDelay;
-    }
-
-    public static class ProgressData {
-        public final int maxProgress;
-        public final int progress;
-        public final String stage;
-        public final String step;
-        
-        public ProgressData(int max, int prog, String stg, String stp) {
-            maxProgress = max;
-            progress = prog;
-            stage = stg;
-            step = stp;
-        }
     }
 
     public static class URLEncoderChromium {

@@ -3,11 +3,13 @@
     src: url('fonts/PublicPixel.ttf');
 }
 
+* {
+    -fx-font-family: 'Public Pixel', monospace;
+}
 
 .root {
   -fx-background-image: url("images/bg2.png");
   -fx-background-size: cover;
-  -fx-font-family: 'Public Pixel';
 }
 
 .ninetile-button {
@@ -33,4 +35,8 @@
 
 .ninetile-button:pressed .text {
     -fx-effect: dropshadow(one-pass-box, black, 0, 0.0, 2, 2);
+}
+
+.scroll-pane, .scroll-pane > .viewport {
+   -fx-background-color: transparent;
 }

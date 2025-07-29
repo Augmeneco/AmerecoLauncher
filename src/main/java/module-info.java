@@ -1,4 +1,4 @@
-module ru.amereco.amerecolauncher {
+open module ru.amereco.amerecolauncher {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.net.http;
@@ -7,8 +7,10 @@ module ru.amereco.amerecolauncher {
     requires com.google.gson;
     requires java.base;
 
-    opens ru.amereco.amerecolauncher to javafx.fxml;
-    opens ru.amereco.amerecolauncher.httpsync to javafx.fxml, org.json;
     exports ru.amereco.amerecolauncher;
     exports ru.amereco.amerecolauncher.httpsync;
+    exports ru.amereco.amerecolauncher.minecraft;
+    exports ru.amereco.amerecolauncher.minecraft.fabric;
+    exports ru.amereco.amerecolauncher.minecraft.mixins;
+    exports ru.amereco.amerecolauncher.minecraft.models;
 }

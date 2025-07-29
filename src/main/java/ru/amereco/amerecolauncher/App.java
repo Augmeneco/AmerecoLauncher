@@ -20,6 +20,10 @@ public class App extends Application {
         stage.setMinHeight(550);
         stage.setMinWidth(640);
         
+        Config config = Config.get();
+        
+        LauncherUpdater.checkAndUpdate();
+        
         scene = new Scene(loadFXML("auth"), 500, 500);
         stage.setScene(scene);
         stage.show();

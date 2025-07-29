@@ -4,8 +4,12 @@
  */
 package ru.amereco.amerecolauncher;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ResourceBundle;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 /**
@@ -23,4 +27,13 @@ public class SettingsController implements Initializable {
         // TODO
     }    
     
+    @FXML
+    private void switchToMain() throws IOException {
+        App.setRoot("main");
+    }
+    
+    @FXML
+    private void resetResources() throws IOException {
+        Files.deleteIfExists(Path.of(Config.get().mainDir));
+    }
 }

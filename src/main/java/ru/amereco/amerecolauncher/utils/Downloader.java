@@ -1,0 +1,79 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
+ */
+package ru.amereco.amerecolauncher.utils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
+/**
+ *
+ * @author lanode
+ */
+public abstract class Downloader extends ProgressSupplier {
+    protected Gson gson;
+    protected HttpClient httpClient;
+    ThreadPoolExecutor executor;
+    
+    public Downloader() {
+        this.httpClient = HttpClient.newBuilder()
+            .connectTimeout(java.time.Duration.ofMillis(5000))
+            .build();
+        gson = new GsonBuilder().create();
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*2);
+    }
+    
+    public abstract boolean checkUpdates() throws IOException, InterruptedException;
+    public abstract boolean checkUpdates(String versionId) throws IOException, InterruptedException;
+    public abstract void download() throws IOException, InterruptedException;
+    public abstract void download(String versionId) throws IOException, InterruptedException;
+
+    protected String httpGet(URI url) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
+
+    protected void downloadToPath(URI url, Path path) throws IOException, InterruptedException {
+        Files.createDirectories(path.getParent());
+        HttpClient.newHttpClient().send(HttpRequest.newBuilder(url).build(), HttpResponse.BodyHandlers.ofFile(path));
+    }
+    
+    protected void downloadToPathInThread(URI url, Path path) {
+        executor.submit(() -> {
+            try {
+                downloadToPath(url, path);
+                javafx.application.Platform.runLater(() -> {
+                    updateStepAndIncProgress(path.toString());
+                });
+            } catch (Exception exc) {
+                javafx.application.Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, exc.getLocalizedMessage(), ButtonType.OK);
+                    alert.showAndWait();
+                });
+            }
+        });
+    }
+    
+    protected void waitUntilDownload() {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            
+        }
+    }
+}
