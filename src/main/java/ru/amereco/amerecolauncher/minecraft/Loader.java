@@ -30,43 +30,6 @@ public class Loader {
     Path assetsDir;
     Path nativesDir;
     
-//    private VersionJSON parseVersionJSON(Path jsonPath, Path librariesPath) throws IOException {
-//        JSONObject clientJson;
-//        try (InputStream is = Files.newInputStream(jsonPath)) {
-//            clientJson = new JSONObject(new JSONTokener(is));
-//        }
-//
-//        VersionJSON result = new VersionJSON();
-//        result.classPaths = getClassPaths(clientJson, librariesPath.toString());
-//        result.mainClass = clientJson.getString("mainClass");
-//        result.version = clientJson.getString("id");
-//        result.versionType = clientJson.getString("type");
-//        result.assetIndex = clientJson.getJSONObject("assetIndex").getString("id");
-//
-//        return result;
-//    }
-    
-//    VersionJSON vj = parseVersionJSON(versionsPath.resolve(version).resolve(version + ".json"), librariesPath);
-//    vj.classPaths += File.pathSeparator + versionsPath.resolve(version).resolve(version + ".jar").toString();
-//
-//    this.executable = "java";
-//    this.classPaths = vj.classPaths;
-//    this.mainClass = vj.mainClass;
-//    this.assetsDir = assetsPath.toString();
-//    this.assetIndex = vj.assetIndex;
-//    this.gameDir = Paths.get(gameDir).toAbsolutePath().toString();
-//    this.nativesDir = nativesPath.toString();
-//    this.version = vj.version;
-//    this.versionType = vj.versionType;
-    
-//    private static class VersionJSON {
-//        String classPaths;
-//        String mainClass;
-//        String version;
-//        String versionType;
-//        String assetIndex;
-//    }
-    
     public Loader(MinecraftLauncher minecraftLauncher) {
         gson = new GsonBuilder().create();
         this.minecraftLauncher = minecraftLauncher;
