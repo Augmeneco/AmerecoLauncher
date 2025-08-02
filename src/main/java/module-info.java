@@ -11,6 +11,8 @@ open module ru.amereco.amerecolauncher {
     exports ru.amereco.amerecolauncher.httpsync;
     exports ru.amereco.amerecolauncher.minecraft;
     exports ru.amereco.amerecolauncher.minecraft.fabric;
+    exports ru.amereco.amerecolauncher.minecraft.fabric.models;
     exports ru.amereco.amerecolauncher.minecraft.mixins;
     exports ru.amereco.amerecolauncher.minecraft.models;
+    exports ru.amereco.amerecolauncher.utils;
 }

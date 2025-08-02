@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Package JDK" basedir=".">
+
+    <condition property="is.linux">
+        <equals arg1="${project.platform}" arg2="linux"/>
+    </condition>
+    <condition property="is.windows">
+        <equals arg1="${project.platform}" arg2="windows"/>
+    </condition>
+    
+    <target name="download-jdk">
+        <mkdir dir="${jdk.dest}"/>
+        <get src="https://api.adoptium.net/v3/binary/latest/${jdk.version}/ga/${project.platform}/${project.arch}/jdk/hotspot/normal/eclipse?project=jdk"
+             dest="${jdk.dest}/${jdk.version}_${project.platform}_${project.arch}"
+             verbose="true" />
+    </target>
+    
+    <target name="unzip-jdk" depends="download-jdk" if="is.windows">
+        <echo>Using unzip</echo>
+        <unzip src="${jdk.dest}/${jdk.version}_${project.platform}_${project.arch}"
+               dest="${jdk.dest}"
+               overwrite="true" />
+    </target>
+    
+    <target name="untar-jdk" depends="download-jdk" unless="is.windows">
+        <echo>Using untar</echo>
+        <untar src="${jdk.dest}/${jdk.version}_${project.platform}_${project.arch}"
+               dest="${jdk.dest}"
+               compression="gzip"/>
+    </target>
+    
+    <target name="link-appimagetool" if="is.linux">
+        <mkdir dir="${project.build.directory}/assets/"/>
+        <exec executable="bash" outputproperty="appimagetool.path">
+            <arg value="-c"/>
+            <arg value="which appimagetool"/>
+        </exec>
+        <symlink link="${project.build.directory}/assets/appimagetool" resource="${appimagetool.path}" />
+    </target>
+    
+    <target name="go" depends="download-jdk, unzip-jdk, untar-jdk"/>
+    
+</project>
