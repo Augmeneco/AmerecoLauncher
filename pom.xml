@@ -258,6 +258,10 @@
                                     <jreMinVersion>${maven.compiler.release}</jreMinVersion>
                                     <displayName>Amereco Launcher</displayName>
                                     <url>${project.organization.url}</url>
+                                    <modules>
+                                        <module>jdk.crypto.ec</module>
+                                        <module>java.security.sasl</module> 
+                                    </modules>
                                     <linuxConfig>
                                         <pngFile>${basedir}/assets/AmerecoLauncher.png</pngFile>
                                         <generateAppImage>false</generateAppImage>
