@@ -278,7 +278,8 @@
                                     <additionalModules>
                                         <module>jdk.crypto.ec</module>
                                         <module>java.security.sasl</module>
-                                        <module>jdk.crypto.cryptoki</module> 
+                                        <module>jdk.crypto.cryptoki</module>
+                                        <module>jdk.zipfs</module> 
                                     </additionalModules>
                                     <linuxConfig>
                                         <pngFile>${basedir}/assets/AmerecoLauncher.png</pngFile>
