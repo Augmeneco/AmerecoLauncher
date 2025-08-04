@@ -8,7 +8,11 @@ import java.util.stream.*;
 public class MinecraftLauncher {
     public Path mainDir;
     
-    public String executable = "java";
+    public String executable = Path.of(
+        System.getProperty("java.home"), 
+        "bin",
+        (System.getProperty("os.name").toLowerCase().contains("windows")) ? "java.exe" : "java"
+    ).toString();
     public List<Path> classPaths = new ArrayList<>();
     public String mainClass;
     public String userName = "pithrilla";
@@ -65,7 +69,7 @@ public class MinecraftLauncher {
         
         Process process = builder.start();
         try {
-            while (process.isAlive() || !Thread.currentThread().isInterrupted()) {
+            while (process.isAlive() && !Thread.currentThread().isInterrupted()) {
                 Thread.sleep(100);
             }
         } catch (InterruptedException exc) {
