@@ -4,7 +4,7 @@ on:
     tags:
       - "v*"
 jobs:
-  build:
+  build-packages:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -41,8 +41,36 @@ jobs:
           name: AmerecoLauncher_${{ runner.os }}-${{ runner.arch }}.${{ matrix.ext }}
           path: target/AmerecoLauncher*.${{ matrix.ext }}
           
+  build-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Get OS info
+        run: mvn enforcer:display-info
+        
+      - name: List active profiles
+        run: mvn help:active-profiles "-Dpackager.shade"
+
+      - name: Build
+        run: mvn clean package "-Dpackager.shade"
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: AmerecoLauncher.jar
+          path: target/AmerecoLauncher*.jar
+          
   release:
-    needs: build
+    needs: [build-jar, build-packages]
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts

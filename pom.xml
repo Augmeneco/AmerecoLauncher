@@ -256,7 +256,6 @@
                                     <platform>${project.platform}</platform>
                                     <arch>${project.arch}</arch>
                                     <jreMinVersion>${maven.compiler.release}</jreMinVersion>
-                                    <name>AmerecoLauncher_${project.platform}-${project.arch}</name>
                                     <displayName>Amereco Launcher</displayName>
                                     <url>${project.organization.url}</url>
                                     <linuxConfig>
@@ -275,6 +274,46 @@
                                         <icnsFile>${basedir}/assets/AmerecoLauncher.icns</icnsFile>
                                     </macConfig>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>rename-package-artifacts</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <property name="classifier" value="${project.platform}-${project.arch}"/>
+                                        <property name="target.dir" value="${project.build.directory}"/>
+
+                                        <!-- Определим макрос -->
+                                        <macrodef name="rename-by-extension">
+                                            <attribute name="ext" />
+                                            <sequential>
+                                                <move todir="${target.dir}">
+                                                    <fileset dir="${target.dir}" includes="*.@{ext}"/>
+                                                    <mapper type="glob" from="*.@{ext}" to="${artifactId}-${version}-${classifier}.@{ext}"/>
+                                                </move>
+                                            </sequential>
+                                        </macrodef>
+
+                                        <!-- Теперь вызываем макрос по каждому расширению -->
+                                        <rename-by-extension ext="exe" />
+                                        <rename-by-extension ext="msi" />
+                                        <rename-by-extension ext="msm" />
+                                        <rename-by-extension ext="deb" />
+                                        <rename-by-extension ext="rpm" />
+                                        <rename-by-extension ext="AppImage" />
+                                        <rename-by-extension ext="dmg" />
+                                        <rename-by-extension ext="pkg" />
+                                    </target>
+                                  </configuration>
                             </execution>
                         </executions>
                     </plugin>

@@ -38,6 +38,14 @@
         <symlink link="${project.build.directory}/assets/appimagetool" resource="${appimagetool.path}" />
     </target>
     
+    <target name="change-jdk1" depends="unzip-jdk, untar-jdk" >
+        <exec executable="bash" outputproperty="jdk.dest1">
+            <arg value="-c"/>
+            <arg value="ls -1 -d ${jdk.dest}/*/ | head -1"/>
+        </exec>
+        <echo message="Output: ${jdk.dest1}"/>
+    </target>
+    
     <target name="go" depends="download-jdk, unzip-jdk, untar-jdk"/>
     
 </project>
