@@ -57,10 +57,10 @@ jobs:
         run: mvn enforcer:display-info
         
       - name: List active profiles
-        run: mvn help:active-profiles "-Dpackager.shade"
+        run: mvn help:active-profiles "-Dpackager.jar"
 
       - name: Build
-        run: mvn clean package "-Dpackager.shade"
+        run: mvn clean package "-Dpackager.jar"
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
