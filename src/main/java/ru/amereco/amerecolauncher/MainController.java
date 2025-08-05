@@ -69,6 +69,8 @@ public class MainController {
         httpSync = new HTTPSync(configUrl, baseUrl, configPath, basePath, 5000, 3000);
         httpSync.setOnProgress(this::handleProgressUpdate);
         
+        hideProgress();
+        
         root.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.windowProperty().addListener((o2, oldWindow, newWindow) -> {
@@ -89,6 +91,7 @@ public class MainController {
     }
 
     private void checkUpdates() {
+        showProgress();
         new Thread(() -> {
             try {
                 if (minecraftDownloader.checkUpdates("1.20.1"))
@@ -99,6 +102,7 @@ public class MainController {
                     updateNeeded.add(UpdateNeeded.HTTPSYNC);
                                      
                 javafx.application.Platform.runLater(() -> {
+                    hideProgress();
                     if (!updateNeeded.isEmpty()) {
                         mainButton.setText("Обновить");
                         mainButton.setOnAction(e -> startUpdate());
@@ -119,6 +123,7 @@ public class MainController {
 
     private void startUpdate() {
         mainButton.setDisable(true);
+        showProgress();
         new Thread(() -> {
             try {
                 if (updateNeeded.contains(UpdateNeeded.MINECRAFT))
@@ -129,6 +134,7 @@ public class MainController {
                     httpSync.download("");
                 
                 javafx.application.Platform.runLater(() -> {
+                    hideProgress();
                     mainButton.setText("Играть");
                     mainButton.setOnAction(e -> launchMinecraft());
                     mainButton.setDisable(false);
@@ -153,6 +159,20 @@ public class MainController {
             progressLabel.setText(String.format("%d / %d",
                 progress.progress(), progress.maxProgress()));
         });
+    }
+    
+    private void hideProgress() {
+        stepLabel.setVisible(false);
+        stageLabel.setVisible(false);
+        progressBar.setVisible(false);
+        progressLabel.setVisible(false);
+    }
+    
+    private void showProgress() {
+        stepLabel.setVisible(true);
+        stageLabel.setVisible(true);
+        progressBar.setVisible(true);
+        progressLabel.setVisible(true);
     }
 
     private void launchMinecraft() {

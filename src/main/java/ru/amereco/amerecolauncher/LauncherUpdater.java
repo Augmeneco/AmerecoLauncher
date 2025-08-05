@@ -7,6 +7,7 @@ package ru.amereco.amerecolauncher;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import javafx.scene.control.Alert;
@@ -72,16 +73,24 @@ public class LauncherUpdater {
         });
     }
     
+    private static void install() {
+        
+    }
+    
     public static void checkAndUpdate() {
-        new Thread(() -> {
-            try {
-                boolean needsUpdate = httpSync.checkUpdates();
-                if (needsUpdate) {
-                    askToUpdate();
+        if (Files.exists(configPath)) {
+            new Thread(() -> {
+                try {
+                    boolean needsUpdate = httpSync.checkUpdates();
+                    if (needsUpdate) {
+                        askToUpdate();
+                    }
+                } catch (Exception exc) {
+                    exc.printStackTrace();
                 }
-            } catch (Exception exc) {
-                exc.printStackTrace();
-            }
-        }).start();
+            }).start();
+        } else {
+            
+        }
     }
 }

@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import javafx.scene.image.Image;
 
 /**
  * JavaFX App
@@ -19,6 +20,8 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         stage.setMinHeight(550);
         stage.setMinWidth(640);
+        stage.setTitle("Amereco Launcher");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("images/logo.png")));
         
         Config config = Config.get();
         
