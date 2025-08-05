@@ -22,7 +22,7 @@ public class App extends Application {
         
         Config config = Config.get();
         
-        LauncherUpdater.checkAndUpdate();
+//        LauncherUpdater.checkAndUpdate();
         
         scene = new Scene(loadFXML("auth"), 500, 500);
         stage.setScene(scene);
