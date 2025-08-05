@@ -10,7 +10,7 @@
     
     <target name="download-jdk">
         <mkdir dir="${jdk.dest}"/>
-        <get src="https://api.adoptium.net/v3/binary/latest/${jdk.version}/ga/${project.platform}/${project.arch}/jdk/hotspot/normal/eclipse?project=jdk"
+        <get src="https://api.adoptium.net/v3/binary/latest/${jdk.version}/ga/${project.platform}/${project.arch}/jre/hotspot/normal/eclipse?project=jdk"
              dest="${jdk.dest}/${jdk.version}_${project.platform}_${project.arch}"
              verbose="true" />
     </target>

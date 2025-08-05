@@ -29,10 +29,10 @@ jobs:
         run: mvn enforcer:display-info
         
       - name: List active profiles
-        run: mvn help:active-profiles "-Dpackager.javapackager"
+        run: mvn help:active-profiles "-Dpackager.javapackager" "-Ddownload-jdk"
 
       - name: Build
-        run: mvn clean package "-Dpackager.javapackager"
+        run: mvn clean package "-Dpackager.javapackager" "-Ddownload-jdk"
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

@@ -275,13 +275,13 @@
                                     <jreMinVersion>${maven.compiler.release}</jreMinVersion>
                                     <displayName>Amereco Launcher</displayName>
                                     <url>${project.organization.url}</url>
-                                    <additionalModules>
+<!--                                    <additionalModules>
                                         <module>jdk.crypto.ec</module>
                                         <module>java.security.sasl</module>
                                         <module>jdk.crypto.cryptoki</module>
                                         <module>jdk.zipfs</module>
                                         <module>java.sql</module>
-                                    </additionalModules>
+                                    </additionalModules>-->
                                     <linuxConfig>
                                         <pngFile>${basedir}/assets/AmerecoLauncher.png</pngFile>
                                         <generateAppImage>false</generateAppImage>
@@ -352,7 +352,7 @@
                 </property>
             </activation>
             <properties>               
-                <jdk.version>21</jdk.version>
+                <jdk.version>17</jdk.version>
                 <jdk.dest>${project.build.directory}/jdk</jdk.dest>
                 <jdk.dest2></jdk.dest2>
             </properties>
@@ -395,7 +395,9 @@
                                     <goal>package</goal>
                                 </goals>
                                 <configuration>
-                                    <jdkPath>${jdk.dest1}/${jdk.dest2}</jdkPath>
+                                    <!--<jdkPath>${jdk.dest1}/${jdk.dest2}</jdkPath>-->
+                                    <customizedJre>false</customizedJre>
+                                    <jrePath>${jdk.dest1}/${jdk.dest2}</jrePath>
                                 </configuration>
                             </execution>
                         </executions>
