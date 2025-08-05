@@ -50,7 +50,10 @@ public class MinecraftLauncher {
         command.add("-Dminecraft.launcher.brand=amereco-launcher");
         command.add("-Dminecraft.launcher.version=1.0");
         command.add("-cp");
-        command.add(classPaths.stream().map(Path::toString).collect(Collectors.joining(File.pathSeparator)));
+        command.add(classPaths.stream()
+                .map(Path::toString)
+//                .map((p) -> "\""+p+"\"")
+                .collect(Collectors.joining(File.pathSeparator)));
         command.add(mainClass);
         command.add("--version"); command.add(version);
         command.add("--versionType"); command.add(versionType);

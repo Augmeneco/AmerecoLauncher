@@ -6,6 +6,7 @@ open module ru.amereco.amerecolauncher {
     requires dev.dirs;
     requires com.google.gson;
     requires java.base;
+    requires org.apache.commons.exec;
 
     exports ru.amereco.amerecolauncher;
     exports ru.amereco.amerecolauncher.httpsync;

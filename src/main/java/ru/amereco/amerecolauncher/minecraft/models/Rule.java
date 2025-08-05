@@ -6,6 +6,7 @@ package ru.amereco.amerecolauncher.minecraft.models;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.Map;
+import org.apache.commons.exec.OS;
 
 /**
  *
@@ -32,23 +33,37 @@ public record Rule(
             @SerializedName("linux") LINUX
         }
     }
-
+    
     public boolean allows() {
         boolean shouldDisallow = action == Action.DISALLOW;
 
+        // Проверяем семейство ОС
         if (os != null) {
-            String currentOS = System.getProperty("os.name").toLowerCase();
-            String currentArch = System.getProperty("os.arch").contains("64") ? "x64" : "x86";
-
             if (os.name() != null) {
-                String osName = os.name().toString().toLowerCase();
-                if (!currentOS.contains(osName)) {
+                switch (os.name()) {
+                    case WINDOWS -> {
+                        if (!org.apache.commons.exec.OS.isFamilyWindows())
+                            return shouldDisallow;
+                    }
+                    case OSX -> {
+                        if (!org.apache.commons.exec.OS.isFamilyMac())
+                            return shouldDisallow;
+                    }
+                    case LINUX -> {
+                        if (!org.apache.commons.exec.OS.isFamilyUnix())
+                            return shouldDisallow;
+                    }
+                }
+            }
+            // Проверяем архитектуру, если указана
+            if (os.arch() != null && !os.arch().isEmpty()) {
+                if (!org.apache.commons.exec.OS.isArch(os.arch())) {
                     return shouldDisallow;
                 }
             }
-
-            if (os.arch() != null && !os.arch().isEmpty()) {
-                if (!os.arch().equals(currentArch)) {
+            // Проверяем версию, если указана
+            if (os.version() != null && !os.version().isEmpty()) {
+                if (!org.apache.commons.exec.OS.isVersion(os.version())) {
                     return shouldDisallow;
                 }
             }

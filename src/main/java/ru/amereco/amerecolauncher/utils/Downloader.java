@@ -63,6 +63,7 @@ public abstract class Downloader extends ProgressSupplier {
                 javafx.application.Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR, exc.getLocalizedMessage(), ButtonType.OK);
                     alert.showAndWait();
+                    executor.shutdownNow();
                 });
             }
         });
