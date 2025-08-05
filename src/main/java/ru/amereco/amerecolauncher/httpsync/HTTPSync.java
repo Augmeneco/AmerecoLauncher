@@ -96,6 +96,12 @@ public class HTTPSync extends Downloader {
     
     public void synchronize() throws IOException, InterruptedException {
         updateStage("Загрузка обновлений...");
+        setFailDownloadHandler(((t) -> {
+            try {
+                Files.deleteIfExists(configPath);
+            } catch (Exception exc) {
+            }
+        }));
         Map<String, String> fileActions = getFileActions();
         try {
             performFileActions(fileActions);

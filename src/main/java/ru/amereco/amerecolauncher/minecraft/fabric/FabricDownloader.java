@@ -7,7 +7,6 @@ package ru.amereco.amerecolauncher.minecraft.fabric;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -155,6 +154,13 @@ public class FabricDownloader extends Downloader {
         try (FileWriter out = new FileWriter(versionJsonPath.toString(), false)) {
             out.write(gson.toJson(version));
         }
+        
+        setFailDownloadHandler(((t) -> {
+            try {
+                Files.deleteIfExists(versionJsonPath);
+            } catch (Exception exc) {
+            }
+        }));
         
         var librariesToDownload = union(fabricMeta.launcherMeta().libraries().client(), fabricMeta.launcherMeta().libraries().common());
         

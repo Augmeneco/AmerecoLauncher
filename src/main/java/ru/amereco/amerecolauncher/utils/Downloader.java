@@ -13,9 +13,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
@@ -27,6 +29,11 @@ public abstract class Downloader extends ProgressSupplier {
     protected Gson gson;
     protected HttpClient httpClient;
     ThreadPoolExecutor executor;
+    Consumer<Exception> failDownloadHandler;
+    
+    protected void setFailDownloadHandler(Consumer<Exception> handler) {
+        failDownloadHandler = handler;
+    }
     
     public Downloader() {
         this.httpClient = HttpClient.newBuilder()
@@ -61,9 +68,11 @@ public abstract class Downloader extends ProgressSupplier {
                 });
             } catch (Exception exc) {
                 javafx.application.Platform.runLater(() -> {
+                    executor.shutdownNow();
+                    if (failDownloadHandler != null)
+                        failDownloadHandler.accept(exc);
                     Alert alert = new Alert(Alert.AlertType.ERROR, exc.getLocalizedMessage(), ButtonType.OK);
                     alert.showAndWait();
-                    executor.shutdownNow();
                 });
             }
         });
@@ -74,7 +83,6 @@ public abstract class Downloader extends ProgressSupplier {
         try {
             executor.awaitTermination(1, TimeUnit.HOURS);
         } catch (InterruptedException e) {
-            
         }
     }
 }

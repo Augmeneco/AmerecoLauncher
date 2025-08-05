@@ -40,3 +40,21 @@
 .scroll-pane, .scroll-pane > .viewport {
    -fx-background-color: transparent;
 }
+
+.ninetile-input {
+    -fx-border-image-source: url("images/input_def.png");
+    -fx-border-image-slice: 3px fill;
+    -fx-border-image-width: 5px;
+    -fx-border-image-insets: 0;
+    -fx-border-image-repeat: stretch;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.ninetile-input:hover {
+    -fx-border-image-source: url("images/input_hover.png");
+}
+
+.ninetile-input:selected {
+    -fx-border-image-source: url("images/input_selected.png");
+}

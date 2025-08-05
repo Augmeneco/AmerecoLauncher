@@ -72,8 +72,16 @@ public class MinecraftDownloader extends Downloader {
         maxProgress = version.libraries().size()+3;
         progress = 0;
         
+        Path versionPath = Path.of(mainDir, "versions", versionInfo.id(), versionInfo.id()+".json");
+        setFailDownloadHandler(((t) -> {
+            try {
+                Files.deleteIfExists(versionPath);
+            } catch (Exception exc) {
+            }
+        }));
+        
 //        updateStepAndIncProgress(versionInfo.id()+".json");
-        downloadToPathInThread(versionInfo.url(), Path.of(mainDir, "versions", versionInfo.id(), versionInfo.id()+".json"));
+        downloadToPathInThread(versionInfo.url(), versionPath);
         
 //        updateStepAndIncProgress(versionId+".jar");
         downloadToPathInThread(version.downloads().client().url(), Path.of(mainDir, "versions", versionId, versionId+".jar"));
