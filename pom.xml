@@ -11,28 +11,29 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>16</maven.compiler.release>
+        <javafx.version>21.0.8</javafx.version>
         <mainClass>ru.amereco.amerecolauncher.Main</mainClass>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20231013</version>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>17.0.2</version>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>17.0.2</version>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>17.0.2</version>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -92,7 +93,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <compilerArgs>
@@ -104,7 +105,7 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.4</version>
+                <version>0.0.8</version>
                 <configuration>
                     <mainClass>ru.amereco.amerecolauncher.Main</mainClass>
                 </configuration>
@@ -186,31 +187,31 @@
                 <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-graphics</artifactId>
-                    <version>17.0.2</version>
+                    <version>${javafx.version}</version>
                     <classifier>win</classifier>
                 </dependency>
                 <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-graphics</artifactId>
-                    <version>17.0.2</version>
+                    <version>${javafx.version}</version>
                     <classifier>linux</classifier>
                 </dependency>
                 <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-graphics</artifactId>
-                    <version>17.0.2</version>
+                    <version>${javafx.version}</version>
                     <classifier>mac-aarch64</classifier>
                 </dependency>
 <!--            <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-graphics</artifactId>
-                    <version>17.0.2</version>
+                    <version>${javafx.version}</version>
                     <classifier>linux-aarch64</classifier>
                 </dependency>-->
 <!--            <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-graphics</artifactId>
-                    <version>17.0.2</version>
+                    <version>${javafx.version}</version>
                     <classifier>mac</classifier>
                 </dependency>-->
             </dependencies>
@@ -322,7 +323,7 @@
                                             <sequential>
                                                 <move todir="${target.dir}">
                                                     <fileset dir="${target.dir}" includes="*.@{ext}"/>
-                                                    <mapper type="glob" from="*.@{ext}" to="${artifactId}-${version}-${classifier}.@{ext}"/>
+                                                    <mapper type="glob" from="*.@{ext}" to="${project.artifactId}-${project.version}-${classifier}.@{ext}"/>
                                                 </move>
                                             </sequential>
                                         </macrodef>
@@ -373,10 +374,13 @@
                                         <ant antfile="jdk-package.xml">
                                             <target name="go"/>
                                         </ant>
-                                        <exec executable="bash" outputproperty="jdk.dest1">
-                                            <arg value="-c"/>
-                                            <arg value="ls -1 -d ${jdk.dest}/*/ | head -1"/>
-                                        </exec>
+                                        <pathconvert property="jdk.dest1" pathsep=";">
+                                            <dirset dir="${jdk.dest}">
+                                                <depth max="0"/>
+                                                <include name="*/"/>
+                                                <exclude name="./"/>
+                                            </dirset>
+                                        </pathconvert>
                                         <echo message="Output: ${jdk.dest1}"/>
                                     </target>
                                     <exportAntProperties>true</exportAntProperties>
