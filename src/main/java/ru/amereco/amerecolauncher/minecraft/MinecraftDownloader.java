@@ -75,6 +75,9 @@ public class MinecraftDownloader extends Downloader {
         Path versionPath = Path.of(mainDir, "versions", versionInfo.id(), versionInfo.id()+".json");
         setFailDownloadHandler(((t) -> {
             try {
+                t.printStackTrace();
+                updateStage("Ошибка скачивания Minecraft");
+                updateStep(t.getMessage());
                 Files.deleteIfExists(versionPath);
             } catch (Exception exc) {
             }

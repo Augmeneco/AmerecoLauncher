@@ -98,6 +98,9 @@ public class HTTPSync extends Downloader {
         updateStage("Загрузка обновлений...");
         setFailDownloadHandler(((t) -> {
             try {
+                t.printStackTrace();
+                updateStage("Ошибка скачивания HTTPSync");
+                updateStep(t.getMessage());
                 Files.deleteIfExists(configPath);
             } catch (Exception exc) {
             }

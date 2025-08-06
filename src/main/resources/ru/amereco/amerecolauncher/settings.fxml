@@ -64,7 +64,7 @@
                         </AnchorPane>
                      </children>
                   </GridPane>
-                  <Button mnemonicParsing="false" prefHeight="30.0" prefWidth="500.0" style="-fx-font-size: 15;" styleClass="ninetile-button" text="Перезагрузить все ресурсы" textFill="WHITE">
+                  <Button mnemonicParsing="false" onAction="#resetResources" prefHeight="30.0" prefWidth="500.0" style="-fx-font-size: 15;" styleClass="ninetile-button" text="Перезагрузить все ресурсы" textFill="WHITE">
                      <font>
                         <Font name="Public Pixel" size="15.0" />
                      </font>

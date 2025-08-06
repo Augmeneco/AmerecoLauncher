@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 /**
  * FXML Controller class
@@ -34,6 +36,9 @@ public class SettingsController implements Initializable {
     
     @FXML
     private void resetResources() throws IOException {
-        Files.deleteIfExists(Path.of(Config.get().mainDir));
+        Alert alert = new Alert(Alert.AlertType.WARNING, "Перезагрузить все данные заного?\nВсе файлы будут удалены.", ButtonType.YES, ButtonType.NO);
+        if (alert.showAndWait().get() == ButtonType.YES) {
+            Files.deleteIfExists(Path.of(Config.get().mainDir));    
+        }
     }
 }

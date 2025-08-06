@@ -157,6 +157,9 @@ public class FabricDownloader extends Downloader {
         
         setFailDownloadHandler(((t) -> {
             try {
+                t.printStackTrace();
+                updateStage("Ошибка скачивания Fabric");
+                updateStep(t.getMessage());
                 Files.deleteIfExists(versionJsonPath);
             } catch (Exception exc) {
             }

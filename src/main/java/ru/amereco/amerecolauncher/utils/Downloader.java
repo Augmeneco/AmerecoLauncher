@@ -72,8 +72,6 @@ public abstract class Downloader extends ProgressSupplier {
                     executor.shutdownNow();
                     if (failDownloadHandler != null)
                         failDownloadHandler.accept(exc);
-                    Alert alert = new Alert(Alert.AlertType.ERROR, exc.getMessage(), ButtonType.OK);
-                    alert.showAndWait();
                 });
             }
         });
