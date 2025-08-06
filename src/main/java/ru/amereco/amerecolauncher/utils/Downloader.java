@@ -13,19 +13,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import ru.amereco.amerecolauncher.Config;
 
 /**
  *
  * @author lanode
  */
 public abstract class Downloader extends ProgressSupplier {
+    private Config config = Config.get();
     protected Gson gson;
     protected HttpClient httpClient;
     ThreadPoolExecutor executor;
@@ -40,7 +41,7 @@ public abstract class Downloader extends ProgressSupplier {
             .connectTimeout(java.time.Duration.ofMillis(5000))
             .build();
         gson = new GsonBuilder().create();
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*2);
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(config.downloadThreadsCount);
     }
     
     public abstract boolean checkUpdates() throws IOException, InterruptedException;
@@ -71,7 +72,7 @@ public abstract class Downloader extends ProgressSupplier {
                     executor.shutdownNow();
                     if (failDownloadHandler != null)
                         failDownloadHandler.accept(exc);
-                    Alert alert = new Alert(Alert.AlertType.ERROR, exc.getLocalizedMessage(), ButtonType.OK);
+                    Alert alert = new Alert(Alert.AlertType.ERROR, exc.getMessage(), ButtonType.OK);
                     alert.showAndWait();
                 });
             }

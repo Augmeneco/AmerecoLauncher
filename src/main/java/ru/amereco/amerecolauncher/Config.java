@@ -24,11 +24,17 @@ public class Config {
     public String mainDir;
     @Expose
     public String username;
+    @Expose
+    public String javaDir;
+    @Expose
+    public int downloadThreadsCount;
 
     private Config() {
         // Значения по умолчанию
         this.mainDir = Path.of(projectDir.dataLocalDir, ".minceraft").toString();
         this.username = null;
+        this.javaDir = System.getProperty("java.home");
+        this.downloadThreadsCount = Runtime.getRuntime().availableProcessors();
     }
 
     public static Config get() {

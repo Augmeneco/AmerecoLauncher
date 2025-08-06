@@ -4,12 +4,15 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
+import ru.amereco.amerecolauncher.Config;
 
 public class MinecraftLauncher {
+    private Config config = Config.get();
+    
     public Path mainDir;
     
     public String executable = Path.of(
-        System.getProperty("java.home"), 
+        config.javaDir, 
         "bin",
         (System.getProperty("os.name").toLowerCase().contains("windows")) ? "java.exe" : "java"
     ).toString();
